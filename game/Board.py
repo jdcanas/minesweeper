@@ -1,9 +1,11 @@
 from random import randint
 
+from game import BoardState
 from game.Cell import Cell
 from typing import Dict
 from game.Coordinate import Coordinate
 from game.GameExceptions import InvalidBoardException
+from game.BoardState import BoardState
 
 
 class Board:
@@ -14,6 +16,12 @@ class Board:
         validateBoard(sizeCoord, numMines)
 
         self.board: Dict[Coordinate, Cell] = {}
+
+    def getCell(self, coord: Coordinate) -> Cell:
+        if coord not in self.board:
+            raise InvalidBoardException("The cell requested is not part of the board")
+
+        return self.board[coord]
 
     def initBoard(self):
         self.board = {}
@@ -46,7 +54,7 @@ class Board:
     def setCellVals(self):
         for coord, cell in self.board.items():
             if cell.isMine:
-                cellVal = 9
+                cellVal = BoardState.MINE
             else:
                 cellVal = self.getNumAdjacentMines(coord)
 
@@ -70,6 +78,9 @@ class Board:
             matrix.append(row)
 
         return matrix
+
+    def getGameGrid(self):
+        return self.board
 
     def printBoard(self):
         for row in self.getMatrix():
