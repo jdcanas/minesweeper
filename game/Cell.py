@@ -3,15 +3,15 @@ from game.Coordinate import Coordinate
 
 class Cell:
 
-    def __init__(self):
+    def __init__(self, coord):
         self.isMine = False
         self.isFlipped = False
         self.isFlagged = False
         self.val = 0
+        self.coord = coord
 
     def setVal(self, val):
         self.val = val
-
 
     def __str__(self):
         return str(self.val)

@@ -34,7 +34,7 @@ class Board:
         for y in range(self.sizeCoord.y):
             for x in range(self.sizeCoord.x):
                 coord = Coordinate(x, y)
-                cell = Cell()
+                cell = Cell(coord)
                 cell.isMine = coord.isInList(mineLocations)
                 self.board[coord] = cell
 
@@ -66,10 +66,16 @@ class Board:
 
         return numAdjacentMines
 
+    def getNumAdjacentFlags(self, coord):
+        adjacentCells = self.getAdjacentCells(coord)
+        numAdjacentFlags = len(list(filter(lambda cell: cell.isFlagged, adjacentCells)))
+
+        return numAdjacentFlags
+
     def getAdjacentCells(self, coord: Coordinate):
         return [self.board[c] for c in coord.getAdjacentCoordinates(self.sizeCoord)]
 
-    def getMatrix(self):
+    def getGameGrid(self):
         matrix = []
         for y in range(self.sizeCoord.y):
             row = []
@@ -79,11 +85,8 @@ class Board:
 
         return matrix
 
-    def getGameGrid(self):
-        return self.board
-
     def printBoard(self):
-        for row in self.getMatrix():
+        for row in self.getGameGrid():
             print(row)
 
 
