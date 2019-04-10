@@ -100,8 +100,6 @@ def mouseClicked(event):
     else:
         game.clickSquare(clickedCoord)
 
-    print("Click ", pos, "Grid coordinates: ", x, y)
-
 def drawGrid():
     # Set the screen background
     screen.fill(BLACK)

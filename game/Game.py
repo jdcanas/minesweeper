@@ -1,7 +1,7 @@
 from game.Board import Board
 from game.Cell import Cell
+from game.Cell import filterFlagged
 from game.Coordinate import Coordinate
-from game.GameExceptions import GameException
 from game.GameState import GameState
 
 class Game:
@@ -31,48 +31,71 @@ class Game:
         if cell.isFlagged: #do nothing
             return self.state
 
-        if cell.isMine:
-            cell.isFlipped = True
-            self.state = GameState.LOST
-            return self.state
-
         self.flipCell(cell)
 
-        if self.isWin():
-            self.state = GameState.WON
-
+        self.state = self.computeState()
         return self.state
 
     def flagSquare(self, coord: Coordinate) -> GameState:
         self.board.getCell(coord).isFlagged = not self.board.getCell(coord).isFlagged
 
-        if self.isWin():
-            self.state = GameState.WON
+        return self.computeState()
 
-        return self.state
+    def computeState(self):
+        state = GameState.PLAYING
 
-    def isWin(self):
+        isInProgress = False
+        isLost = False
 
         for x in range(self.width):
             for y in range(self.height):
                 cell = self.board.getCell(Coordinate(x, y))
 
-                if cell.isMine and not cell.isFlagged: #all mines must be flagged
-                    return False
+                if cell.isMine and cell.isFlipped:
+                    isLost = True
+                    break
 
-                if not cell.isMine and not cell.isFlipped: #all non-mines must be flipped
-                    return False
-        return True
+                if cell.isMine and not cell.isFlagged:  # all mines must be flagged
+                    isInProgress = True
+
+                if not cell.isMine and not cell.isFlipped:  # all non-mines must be flipped
+                    isInProgress = True
+
+        if isLost:
+            state = GameState.LOST
+        elif isInProgress:
+            state = GameState.PLAYING
+        else:
+            state = GameState.WON
+
+        if state == GameState.WON: print("You won!")
+        return state
+
+    # def isWin(self):
+    #     for x in range(self.width):
+    #         for y in range(self.height):
+    #             cell = self.board.getCell(Coordinate(x, y))
+    #
+    #             if cell.isMine and not cell.isFlagged: #all mines must be flagged
+    #                 return False
+    #
+    #             if not cell.isMine and not cell.isFlipped: #all non-mines must be flipped
+    #                 return False
+    #     return True
 
     def flipCell(self, cell: Cell):
+        toFlip = []
         if not cell.isFlipped:
-            cell.isFlipped = True
+            toFlip.append(cell)
 
             if cell.val == 0:
-                self.flipAdjacentCells(cell)
+                toFlip = self.adjacentToFlipBFS(cell)
         else:
-            if self.board.getNumAdjacentFlags(cell.coord) >= self.cell.val:
-                self.flipAdjacentCells(cell)
+            if self.board.getNumAdjacentFlags(cell.coord) >= cell.val:
+                toFlip = self.adjacentToFlipBFS(cell)
+
+        for cell in toFlip:
+            cell.isFlipped = True
 
     def adjacentToFlipBFS(self, root: Cell):
         toSearch = [root]
@@ -81,11 +104,21 @@ class Game:
         while len(toSearch) > 0:
             currNode = toSearch.pop()
 
-            #mark all nodes adjacent as to be flipped
-            found.extend(self.board.getAdjacentCells(currNode))
+            adjacentCells = self.board.getAdjacentCells(currNode.coord)
 
             #search all adj nodes with val = 0
-            toSearch.extend(list(filter(lambda adjNode: (not adjNode.isFlagged and not adjNode.isFlipped and adjNode.val == 0 and adjNode not in toSearch and adjNode not in found), self.board.getAdjacentCells(currNode))))
+            toSearch.extend(list(filter(lambda adjNode:
+                                        (not adjNode.isFlagged
+                                         and not adjNode.isFlipped
+                                         and adjNode.val == 0
+                                         and adjNode not in toSearch
+                                         and adjNode not in found),
+                                        self.board.getAdjacentCells(currNode.coord))))
+
+            #mark all nodes adjacent as to be flipped
+            found.extend(filterFlagged(adjacentCells))
+
+        return found
 
     def flipAdjacentCells(self, cell: Cell):
         for adjCell in self.board.getAdjacentCells(cell.coord):

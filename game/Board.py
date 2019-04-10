@@ -54,7 +54,7 @@ class Board:
     def setCellVals(self):
         for coord, cell in self.board.items():
             if cell.isMine:
-                cellVal = BoardState.MINE
+                cellVal = 9
             else:
                 cellVal = self.getNumAdjacentMines(coord)
 

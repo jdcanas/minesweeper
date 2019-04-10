@@ -20,4 +20,8 @@ class Cell:
         return str(self)
 
 
+def filterFlagged(cells):
+    return list(filter(lambda cell: not cell.isFlagged, cells))
+
+
 
