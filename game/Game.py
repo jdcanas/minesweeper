@@ -2,7 +2,10 @@ from game.Board import Board
 from game.Cell import Cell
 from game.Cell import filterFlagged
 from game.Coordinate import Coordinate
+from game.GameExceptions import GameException
 from game.GameState import GameState
+
+#TODO: make UIGame and AIGame
 
 class Game:
 
@@ -18,6 +21,15 @@ class Game:
         self.state = GameState.PLAYING
         self.board.initBoard()
         self.board.printBoard()
+
+    def getCell(self, coord) -> Cell:
+        if self.canGetCell(coord):
+            return self.board[coord]
+        else:
+            raise GameException("Cannot get this cell, it is unflipped")
+
+    def canGetCell(self, coord) -> bool:
+        return self.board[coord].isFlipped
 
     def getGameGrid(self):
         return self.board.getGameGrid()
@@ -70,18 +82,6 @@ class Game:
 
         if state == GameState.WON: print("You won!")
         return state
-
-    # def isWin(self):
-    #     for x in range(self.width):
-    #         for y in range(self.height):
-    #             cell = self.board.getCell(Coordinate(x, y))
-    #
-    #             if cell.isMine and not cell.isFlagged: #all mines must be flagged
-    #                 return False
-    #
-    #             if not cell.isMine and not cell.isFlipped: #all non-mines must be flipped
-    #                 return False
-    #     return True
 
     def flipCell(self, cell: Cell):
         toFlip = []
